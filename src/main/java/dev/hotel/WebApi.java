@@ -1,26 +1,23 @@
 package dev.hotel;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import javax.validation.Valid;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import dev.hotel.entite.Chambre;
 import dev.hotel.entite.Client;
 import dev.repository.ClientRepository;
 
@@ -38,7 +35,7 @@ public class WebApi {
 	}
 
 	ClientRepository clientRp;
-	
+		//http://localhost:8080/hotel/clients?start=0&size=5
 		@RequestMapping(method = RequestMethod.GET, path = "/clients")
 		public List<Client> Clien(@RequestParam Integer start,  @RequestParam Integer size) {
 			List<Client> msg = clientRp.findAll(PageRequest.of(start, size)).toList();
@@ -59,6 +56,19 @@ public class WebApi {
 			}
 			else {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
+		}
+		
+		@PostMapping
+		public ResponseEntity<?> postClient(@RequestBody Client client) {
+
+			if (client.getNom().length() < 2 || client.getPrenoms().length() < 2) {
+				return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+						.body("Le Nom et Le Prenom doivent contenir plus de 2 Charactere");
+			} else {
+				clientRp.save(client);
+				return ResponseEntity.status(HttpStatus.ACCEPTED).header("verifNomPrenom", "Le Client est valide").body(client);
+
 			}
 		}
 		
